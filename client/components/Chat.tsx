@@ -68,16 +68,16 @@ export function Chat() {
     setMessages(newMessages)
     const last10messages = newMessages.slice(-10) // remember last 10 messages
 
-    const response = await fetch('/api/chat', {
-      method: 'POST',
+    console.log("API: ", process.env.NEXT_PUBLIC_GETAPI)
+
+    const response = await fetch(process.env.NEXT_PUBLIC_GETAPI as string, {
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        messages: last10messages,
-        user: cookie[COOKIE_NAME],
-      }),
     })
+
+    console.log("RESPONSE ", response)
 
     console.log('Edge function returned.')
 
@@ -90,6 +90,8 @@ export function Chat() {
     if (!data) {
       return
     }
+
+    console.log(data)
 
     const reader = data.getReader()
     const decoder = new TextDecoder()
