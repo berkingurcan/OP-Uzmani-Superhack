@@ -11,7 +11,7 @@ openai.api_key  = os.environ['OPENAI_API_KEY']
 
 def get_log(request):
     data = {
-        'message': 'WORKING!.'
+        'message': openai.api_key
     }
     return JsonResponse(data)
 
