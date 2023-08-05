@@ -1,5 +1,3 @@
-
-chatbot/.env
-backend/chatbot/.env
+# Exclude .env file
 .env
-env/
+chatbot/.env
