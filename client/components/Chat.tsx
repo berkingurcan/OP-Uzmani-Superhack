@@ -68,8 +68,6 @@ export function Chat() {
     setMessages(newMessages)
     const last10messages = newMessages.slice(-10) // remember last 10 messages
 
-    console.log("API: ", process.env.NEXT_PUBLIC_GETAPI)
-
     const response = await fetch(process.env.NEXT_PUBLIC_GETAPI as string, {
       method: 'GET',
       headers: {
