@@ -18,7 +18,10 @@ def get_log(request):
     return JsonResponse(data)
 
 @csrf_exempt
-def get_completion(request, model="gpt-3.5-turbo"):
+def get_completion( request, 
+                    model="gpt-3.5-turbo",
+                    temperature=0, 
+                    max_tokens=500):
     if request.method == 'POST':
         # Parse the JSON data from the request body
         data = json.loads(request.body)
@@ -30,6 +33,7 @@ def get_completion(request, model="gpt-3.5-turbo"):
     response = openai.ChatCompletion.create(
         model=model,
         messages=messages,
-        temperature=0,
+        temperature=temperature, # this is the degree of randomness of the model's output
+        max_tokens=max_tokens, # the maximum number of tokens the model can ouptut 
     )
     return HttpResponse(response.choices[0].message["content"])
