@@ -1,0 +1,19 @@
+import os
+import openai
+import tiktoken
+from django.http import HttpResponse, JsonResponse
+
+
+from dotenv import load_dotenv, find_dotenv
+_ = load_dotenv(find_dotenv()) # read local .env file
+
+openai.api_key  = os.environ['OPENAI_API_KEY']
+
+def get_log(request):
+    data = {
+        'message': 'WORKING!.'
+    }
+    return JsonResponse(data)
+
+
+
