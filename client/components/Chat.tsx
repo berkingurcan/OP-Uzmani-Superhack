@@ -69,13 +69,14 @@ export function Chat() {
     const last10messages = newMessages.slice(-10) // remember last 10 messages
 
     const response = await fetch(process.env.NEXT_PUBLIC_GETAPI as string, {
-      method: 'GET',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({
+        messages: last10messages,
+      }),
     })
-
-    console.log("RESPONSE ", response)
 
     console.log('Edge function returned.')
 
