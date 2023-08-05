@@ -14,6 +14,3 @@ def get_log(request):
         'message': 'working'
     }
     return JsonResponse(data)
-
-
-
