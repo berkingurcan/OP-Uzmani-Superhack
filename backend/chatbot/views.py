@@ -4,6 +4,7 @@ import tiktoken
 import json
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from langchain.document_loaders import UnstructuredMarkdownLoader
 
 
 from dotenv import load_dotenv, find_dotenv
