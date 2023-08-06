@@ -28,8 +28,10 @@ def get_completion( request,
         prompt = data.get("messages")
     else:
         return HttpResponse("Invalid request method")
-
+    
+    
     messages = prompt
+    
     response = openai.ChatCompletion.create(
         model=model,
         messages=messages,
