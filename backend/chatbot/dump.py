@@ -16,10 +16,10 @@ from dotenv import load_dotenv, find_dotenv
 _ = load_dotenv(find_dotenv()) # read local .env file
 
 """
- ____  _  _  ____  ____  ____  ____  __ _   ___ 
-(  __)( \/ )(  _ \(  __)(    \(    \(  ( \ / __)
- ) _) / \/ \ ) _ ( ) _)  ) D ( ) D (/    /( (_ \
-(____)\_)(_/(____/(____)(____/(____/\_)__) \___/
+ __    _____    __    ____  ____  _  _  ___ 
+(  )  (  _  )  /__\  (  _ \(_  _)( \( )/ __)
+ )(__  )(_)(  /(__)\  )(_) )_)(_  )  (( (_-.
+(____)(_____)(__)(__)(____/(____)(_)\_)\___/
 """
 
 def md_loader():
@@ -31,20 +31,34 @@ def md_loader():
 loader = UnstructuredMarkdownLoader("./docs/understand/landscape.md")
 
 md = loader.load()
-print(md)
 
+"""
+ ___  ____  __    ____  ____  ____  ____  _  _  ___ 
+/ __)(  _ \(  )  (_  _)(_  _)(_  _)(_  _)( \( )/ __)
+\__ \ )___/ )(__  _)(_   )(    )(   _)(_  )  (( (_-.
+(___/(__)  (____)(____) (__)  (__) (____)(_)\_)\___/
+"""
 
-model_name = 'text-embedding-ada-002'
-embedding = OpenAIEmbeddings(chunk_size=1)
+def split_documents():
+    # TODO: Splitting
+    pass
 
-# TODO: Change embedding to MarkdownHeaderTextSplitter if it is better!
-chunks = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
+"""
+ ____  __  __  ____  ____  ____  ____  ____  _  _  ___ 
+( ___)(  \/  )(  _ \( ___)(  _ \(  _ \(_  _)( \( )/ __)
+ )__)  )    (  ) _ < )__)  )(_) ))(_) )_)(_  )  (( (_-.
+(____)(_/\/\_)(____/(____)(____/(____/(____)(_)\_)\___/
+"""
 
-""" 
- ____  __  __ _  ____  ___  __   __ _  ____ 
-(  _ \(  )(  ( \(  __)/ __)/  \ (  ( \(  __)
- ) __/ )( /    / ) _)( (__(  O )/    / ) _) 
-(__)  (__)\_)__)(____)\___)\__/ \_)__)(____) 
+def embed():
+    # TODO Embedding
+    pass
+
+"""
+ _  _  ____  ___  ____  _____  ____    ___  ____  _____  ____  ____ 
+( \/ )( ___)/ __)(_  _)(  _  )(  _ \  / __)(_  _)(  _  )(  _ \( ___)
+ \  /  )__)( (__   )(   )(_)(  )   /  \__ \  )(   )(_)(  )   / )__) 
+  \/  (____)\___) (__) (_____)(_)\_)  (___/ (__) (_____)(_)\_)(____)
 """
 
 # Load Pinecone API key
@@ -71,5 +85,42 @@ while not pinecone.describe_index(index_name).status['ready']:
 
 index = pinecone.Index(index_name)
 index.describe_index_stats()
-print(index.describe_index_stats())
 
+
+
+
+model_name = 'text-embedding-ada-002'
+embedding = OpenAIEmbeddings(chunk_size=1)
+
+# TODO: Change embedding to MarkdownHeaderTextSplitter if it is better!
+chunks = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100).split_documents(md)
+
+""" 
+ ____  __  __ _  ____  ___  __   __ _  ____ 
+(  _ \(  )(  ( \(  __)/ __)/  \ (  ( \(  __)
+ ) __/ )( /    / ) _)( (__(  O )/    / ) _) 
+(__)  (__)\_)__)(____)\___)\__/ \_)__)(____) 
+"""
+
+
+
+vector_store = Pinecone.from_documents(chunks, embedding, index_name=index_name)
+
+"""
+ ____  ____  ____  ____  ____  ____  _  _  __    __   
+(  _ \( ___)(_  _)(  _ \(_  _)( ___)( \/ )/__\  (  )  
+ )   / )__)   )(   )   / _)(_  )__)  \  //(__)\  )(__ 
+(_)\_)(____) (__) (_)\_)(____)(____)  \/(__)(__)(____)
+"""
+
+
+openai.api_key = os.getenv('OPENAI_API_KEY') or 'OPENAI_API_KEY'
+
+embed_model = "text-embedding-ada-002"
+
+"""
+ _____  __  __  ____  ____  __  __  ____ 
+(  _  )(  )(  )(_  _)(  _ \(  )(  )(_  _)
+ )(_)(  )(__)(   )(   )___/ )(__)(   )(  
+(_____)(______) (__) (__)  (______) (__) 
+"""
