@@ -1,3 +1,4 @@
+import glob
 import os
 import openai
 import tiktoken
@@ -5,11 +6,9 @@ import pinecone
 import json
 import time
 
-from django.http import HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from langchain.document_loaders import UnstructuredMarkdownLoader
 from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.text_splitter import CharacterTextSplitter
+from langchain.text_splitter import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
 from langchain.vectorstores import Pinecone
 
 
@@ -23,13 +22,23 @@ _ = load_dotenv(find_dotenv()) # read local .env file
 (____)\_)(_/(____/(____)(____/(____/\_)__) \___/
 """
 
+def md_loader():
+    markdown_files = glob.glob(os.path.join(path_to_dir, "*.md"))
+    docs = [UnstructuredMarkdownLoader(f).load()[0] for f in markdown_files]
+    chunks = MarkdownHeaderTextSplitter(chunk_size=1000, chunk_overlap=100).split_documents(docs)
+    pass
+
 loader = UnstructuredMarkdownLoader("./docs/understand/landscape.md")
 
 md = loader.load()
 print(md)
 
+
 model_name = 'text-embedding-ada-002'
-embeddings = OpenAIEmbeddings()
+embedding = OpenAIEmbeddings(chunk_size=1)
+
+# TODO: Change embedding to MarkdownHeaderTextSplitter if it is better!
+chunks = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
 
 """ 
  ____  __  __ _  ____  ___  __   __ _  ____ 
@@ -60,6 +69,7 @@ pinecone.create_index(
 while not pinecone.describe_index(index_name).status['ready']:
     time.sleep(1)
 
-index = pinecone.GRPCIndex(index_name)
+index = pinecone.Index(index_name)
 index.describe_index_stats()
+print(index.describe_index_stats())
 
