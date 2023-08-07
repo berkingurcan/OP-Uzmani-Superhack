@@ -87,21 +87,11 @@ index = pinecone.Index(index_name)
 index.describe_index_stats()
 
 
-
-
 model_name = 'text-embedding-ada-002'
 embedding = OpenAIEmbeddings(chunk_size=1)
 
 # TODO: Change embedding to MarkdownHeaderTextSplitter if it is better!
 chunks = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100).split_documents(md)
-
-""" 
- ____  __  __ _  ____  ___  __   __ _  ____ 
-(  _ \(  )(  ( \(  __)/ __)/  \ (  ( \(  __)
- ) __/ )( /    / ) _)( (__(  O )/    / ) _) 
-(__)  (__)\_)__)(____)\___)\__/ \_)__)(____) 
-"""
-
 
 
 vector_store = Pinecone.from_documents(chunks, embedding, index_name=index_name)
@@ -112,7 +102,9 @@ vector_store = Pinecone.from_documents(chunks, embedding, index_name=index_name)
  )   / )__)   )(   )   / _)(_  )__)  \  //(__)\  )(__ 
 (_)\_)(____) (__) (_)\_)(____)(____)  \/(__)(__)(____)
 """
-
+def retrieval(query):
+    # TODO retrival with query
+    pass
 
 openai.api_key = os.getenv('OPENAI_API_KEY') or 'OPENAI_API_KEY'
 
@@ -124,3 +116,5 @@ embed_model = "text-embedding-ada-002"
  )(_)(  )(__)(   )(   )___/ )(__)(   )(  
 (_____)(______) (__) (__)  (______) (__) 
 """
+
+# TODO Chat with your data :D
