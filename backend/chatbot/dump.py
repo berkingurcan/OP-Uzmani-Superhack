@@ -23,14 +23,12 @@ _ = load_dotenv(find_dotenv()) # read local .env file
 """
 
 def md_loader():
-    markdown_files = glob.glob(os.path.join(path_to_dir, "*.md"))
+    markdown_files = glob.glob(os.path.join("./docs", "*.md"))
     docs = [UnstructuredMarkdownLoader(f).load()[0] for f in markdown_files]
-    chunks = MarkdownHeaderTextSplitter(chunk_size=1000, chunk_overlap=100).split_documents(docs)
-    pass
+    return docs
 
-loader = UnstructuredMarkdownLoader("./docs/understand/landscape.md")
-
-md = loader.load()
+loaded_md = md_loader()
+print(loaded_md[3])
 
 """
  ___  ____  __    ____  ____  ____  ____  _  _  ___ 
@@ -41,6 +39,8 @@ md = loader.load()
 
 def split_documents():
     # TODO: Splitting
+    chunks = MarkdownHeaderTextSplitter(chunk_size=1000, chunk_overlap=100).split_documents(loaded_md)
+
     pass
 
 """
@@ -61,40 +61,39 @@ def embed():
   \/  (____)\___) (__) (_____)(_)\_)  (___/ (__) (_____)(_)\_)(____)
 """
 
-# Load Pinecone API key
-api_key = os.getenv('PINECONE_API_KEY') or 'YOUR_API_KEY'
-# Set Pinecone environment. Find next to API key in console
-env = os.getenv('PINECONE_ENVIRONMENT') or "YOUR_ENV"
+def vector_store():
+    # Load Pinecone API key
+    api_key = os.getenv('PINECONE_API_KEY') or 'YOUR_API_KEY'
+    # Set Pinecone environment. Find next to API key in console
+    env = os.getenv('PINECONE_ENVIRONMENT') or "YOUR_ENV"
 
-pinecone.init(api_key=api_key, environment=env)
+    pinecone.init(api_key=api_key, environment=env)
 
-index_name = 'mango'
-if index_name in pinecone.list_indexes():
-    pinecone.delete_index(index_name)
+    index_name = 'mango'
+    if index_name in pinecone.list_indexes():
+        pinecone.delete_index(index_name)
 
-# we create a new index
-pinecone.create_index(
-    name=index_name,
-    metric='dotproduct',
-    dimension=1536  # 1536 dim of text-embedding-ada-002
-)
+    # we create a new index
+    pinecone.create_index(
+        name=index_name,
+        metric='dotproduct',
+        dimension=1536  # 1536 dim of text-embedding-ada-002
+    )
 
-# wait for index to be initialized
-while not pinecone.describe_index(index_name).status['ready']:
-    time.sleep(1)
+    # wait for index to be initialized
+    while not pinecone.describe_index(index_name).status['ready']:
+        time.sleep(1)
 
-index = pinecone.Index(index_name)
-index.describe_index_stats()
+    index = pinecone.Index(index_name)
+    index.describe_index_stats()
 
+    model_name = 'text-embedding-ada-002'
+    embedding = OpenAIEmbeddings(chunk_size=1)
 
-model_name = 'text-embedding-ada-002'
-embedding = OpenAIEmbeddings(chunk_size=1)
+    # TODO: Change embedding to MarkdownHeaderTextSplitter if it is better!
+    chunks = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100).split_documents(md)
 
-# TODO: Change embedding to MarkdownHeaderTextSplitter if it is better!
-chunks = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100).split_documents(md)
-
-
-vector_store = Pinecone.from_documents(chunks, embedding, index_name=index_name)
+    vector_store = Pinecone.from_documents(chunks, embedding, index_name=index_name)
 
 """
  ____  ____  ____  ____  ____  ____  _  _  __    __   
@@ -104,11 +103,12 @@ vector_store = Pinecone.from_documents(chunks, embedding, index_name=index_name)
 """
 def retrieval(query):
     # TODO retrival with query
+    openai.api_key = os.getenv('OPENAI_API_KEY') or 'OPENAI_API_KEY'
+    embed_model = "text-embedding-ada-002"
+
     pass
 
-openai.api_key = os.getenv('OPENAI_API_KEY') or 'OPENAI_API_KEY'
 
-embed_model = "text-embedding-ada-002"
 
 """
  _____  __  __  ____  ____  __  __  ____ 
