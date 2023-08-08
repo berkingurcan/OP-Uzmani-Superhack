@@ -1,5 +1,6 @@
 import glob
 import os
+from uuid import uuid4
 import openai
 import tiktoken
 import pinecone
@@ -54,6 +55,7 @@ def split_documents():
 
 
 splitted_documents = split_documents()
+
 """
  ____  __  __  ____  ____  ____  ____  ____  _  _  ___ 
 ( ___)(  \/  )(  _ \( ___)(  _ \(  _ \(_  _)( \( )/ __)
@@ -115,11 +117,33 @@ def vector_store():
 
     # TODO: Change embedding to MarkdownHeaderTextSplitter if it is better!
 
-    vector_store = Pinecone(index, embeddings.embed_query, "text")
+    vector_store = Pinecone(index, embeddings, "text")
+
+    def get_metadatas(chunks):
+
+        def extract_title(document):
+            lines = document.page_content.split('\n')
+            for line in lines:
+                if line.startswith('title:'):
+                    title = line.split('title:')[1].strip()
+                    return title
+            return None  # Return None if no title is found
+
+
+        metadatas = [ {
+        "text": chunks[i],
+        "title": extract_title(chunks[i]),
+        } for i in range(len(chunks)) ]
+
+        return metadatas
+    
+    metadatas = get_metadatas(splitted_documents)
+
+    ids = [str(uuid4()) for _ in range(len(splitted_documents))]
+    index.upsert(zip(ids, embeddings, metadatas))
     return vector_store
 
 vector_stored = vector_store()
-print(vector_stored)
 
 """
  ____  ____  ____  ____  ____  ____  _  _  __    __   
