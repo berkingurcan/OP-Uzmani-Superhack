@@ -160,6 +160,8 @@ def retrieval(query):
 
     embed_model = "text-embedding-ada-002"
 
+    chat = ChatOpenAI(openai_api_key=openai.api_key)
+
     embed = OpenAIEmbeddings(
         model=embed_model,
         openai_api_key=openai.api_key
@@ -167,17 +169,15 @@ def retrieval(query):
 
     pinecone.init(api_key=api_key, environment=env)
     index = pinecone.Index('mango')
+    vector_store = Pinecone(index, embed.embed_query, "text")
 
-    vectorstore = Pinecone(
-        index, embed.embed_query, "text"
+    qa = RetrievalQA.from_chain_type(
+        llm=chat,
+        chain_type="stuff",
+        retriever=vector_store.as_retriever()
     )
 
-    result = vectorstore.similarity_search(
-        query,  # our search query
-        k=3  # return 3 most relevant docs
-    )   
-
-    return result
+    return qa.run(query)
 
 result = retrieval("What is OP Stack?")
 print(result)
