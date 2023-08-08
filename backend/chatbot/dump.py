@@ -48,6 +48,8 @@ def split_documents():
         ("##", "Header 2"),
         ("###", "Header 3"),
     ]
+
+    # TODO: Change chunks to MarkdownHeaderTextSplitter if it is better!
     
     chunks = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100).split_documents(loaded_md)
     return chunks
@@ -55,6 +57,7 @@ def split_documents():
 
 
 splitted_documents = split_documents()
+print(splitted_documents)
 
 """
  ____  __  __  ____  ____  ____  ____  ____  _  _  ___ 
@@ -115,7 +118,6 @@ def vector_store():
 
     model_name = 'text-embedding-ada-002'
 
-    # TODO: Change embedding to MarkdownHeaderTextSplitter if it is better!
 
     vector_store = Pinecone(index, embeddings, "text")
 
@@ -138,6 +140,7 @@ def vector_store():
         return metadatas
     
     metadatas = get_metadatas(splitted_documents)
+    print(metadatas)
 
     ids = [str(uuid4()) for _ in range(len(splitted_documents))]
     index.upsert(zip(ids, embeddings, metadatas))
