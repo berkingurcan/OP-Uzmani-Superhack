@@ -128,11 +128,11 @@ def vector_store():
                 if line.startswith('title:'):
                     title = line.split('title:')[1].strip()
                     return title
-            return None  # Return None if no title is found
+            return ""  # Return None if no title is found
 
 
         metadatas = [ {
-        "text": chunks[i],
+        "text": chunks[i].page_content,
         "title": extract_title(chunks[i]),
         } for i in range(len(chunks)) ]
 
@@ -141,7 +141,7 @@ def vector_store():
     metadatas = get_metadatas(splitted_documents)
 
     ids = [str(uuid4()) for _ in range(len(splitted_documents))]
-    print(zip(ids, embeddings, metadatas))
+    print(metadatas)
     index.upsert(zip(ids, embeddings, metadatas))
     return vector_store
 
