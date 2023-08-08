@@ -57,7 +57,6 @@ def split_documents():
 
 
 splitted_documents = split_documents()
-print(splitted_documents)
 
 """
  ____  __  __  ____  ____  ____  ____  ____  _  _  ___ 
@@ -140,9 +139,9 @@ def vector_store():
         return metadatas
     
     metadatas = get_metadatas(splitted_documents)
-    print(metadatas)
 
     ids = [str(uuid4()) for _ in range(len(splitted_documents))]
+    print(zip(ids, embeddings, metadatas))
     index.upsert(zip(ids, embeddings, metadatas))
     return vector_store
 
