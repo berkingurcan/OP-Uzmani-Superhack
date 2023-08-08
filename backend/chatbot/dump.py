@@ -11,6 +11,8 @@ from langchain.document_loaders import UnstructuredMarkdownLoader
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter, MarkdownTextSplitter
 from langchain.vectorstores import Pinecone
+from langchain.chat_models import ChatOpenAI
+from langchain.chains import RetrievalQA
 
 
 from dotenv import load_dotenv, find_dotenv
@@ -113,12 +115,6 @@ def vector_store():
         time.sleep(1)
 
     index = pinecone.Index(index_name)
-    print(index.describe_index_stats())
-
-    model_name = 'text-embedding-ada-002'
-
-
-    vector_store = Pinecone(index, embeddings, "text")
 
     def get_metadatas(chunks):
 
@@ -141,11 +137,11 @@ def vector_store():
     metadatas = get_metadatas(splitted_documents)
 
     ids = [str(uuid4()) for _ in range(len(splitted_documents))]
-    print(metadatas)
-    index.upsert(zip(ids, embeddings, metadatas))
-    return vector_store
+    indexed = index.upsert(zip(ids, embeddings, metadatas))
+    return indexed
 
-vector_stored = vector_store()
+indexed = vector_store()
+print(indexed)
 
 """
  ____  ____  ____  ____  ____  ____  _  _  __    __   
@@ -155,11 +151,40 @@ vector_stored = vector_store()
 """
 def retrieval(query):
     # TODO retrival with query
+
     openai.api_key = os.getenv('OPENAI_API_KEY') or 'OPENAI_API_KEY'
+    # Load Pinecone API key
+    api_key = os.getenv('PINECONE_API_KEY') or 'YOUR_API_KEY'
+    # Set Pinecone environment. Find next to API key in console
+    env = os.getenv('PINECONE_ENVIRONMENT') or "YOUR_ENV"
+
     embed_model = "text-embedding-ada-002"
 
-    pass
+    embed = OpenAIEmbeddings(
+        model=embed_model,
+        openai_api_key=openai.api_key
+    )
 
+    pinecone.init(api_key=api_key, environment=env)
+    index = pinecone.Index('mango')
+
+    vectorstore = Pinecone(
+        index, embed.embed_query, "text"
+    )
+
+    result = vectorstore.similarity_search(
+        query,  # our search query
+        k=3  # return 3 most relevant docs
+    )   
+
+    return result
+
+result = retrieval("What is OP Stack?")
+print(result)
+
+def print_index_stats():
+    index = pinecone.Index('mango')
+    print(index.describe_index_stats())
 
 
 """
