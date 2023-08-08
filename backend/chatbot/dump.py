@@ -8,7 +8,7 @@ import time
 
 from langchain.document_loaders import UnstructuredMarkdownLoader
 from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.text_splitter import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter, MarkdownTextSplitter
 from langchain.vectorstores import Pinecone
 
 
@@ -24,11 +24,14 @@ _ = load_dotenv(find_dotenv()) # read local .env file
 
 def md_loader():
     markdown_files = glob.glob(os.path.join("./docs", "*.md"))
-    docs = [UnstructuredMarkdownLoader(f).load()[0] for f in markdown_files]
+    docs = [UnstructuredMarkdownLoader(f, mode = "single").load()[0] for f in markdown_files]
     return docs
 
 loaded_md = md_loader()
-print(loaded_md[3])
+
+def git_loader():
+    # TODO: Load github projects
+    pass
 
 """
  ___  ____  __    ____  ____  ____  ____  _  _  ___ 
@@ -39,10 +42,18 @@ print(loaded_md[3])
 
 def split_documents():
     # TODO: Splitting
-    chunks = MarkdownHeaderTextSplitter(chunk_size=1000, chunk_overlap=100).split_documents(loaded_md)
+    headers_to_split_on = [
+        ("title:", "Header 1"),
+        ("##", "Header 2"),
+        ("###", "Header 3"),
+    ]
+    
+    chunks = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100).split_documents(loaded_md)
+    return chunks
+   
 
-    pass
 
+splitted_documents = split_documents()
 """
  ____  __  __  ____  ____  ____  ____  ____  _  _  ___ 
 ( ___)(  \/  )(  _ \( ___)(  _ \(  _ \(_  _)( \( )/ __)
@@ -52,7 +63,20 @@ def split_documents():
 
 def embed():
     # TODO Embedding
-    pass
+    model_name = 'text-embedding-ada-002'
+
+    text = [c.page_content for c in splitted_documents]
+
+    embeddings = OpenAIEmbeddings(
+        model=model_name,
+        openai_api_key=os.environ['OPENAI_API_KEY']
+    ).embed_documents(text)
+
+    length_of_embedding = len(embeddings[0])
+
+    return embeddings, length_of_embedding
+    
+embeddings, length_of_embedding = embed()
 
 """
  _  _  ____  ___  ____  _____  ____    ___  ____  _____  ____  ____ 
@@ -77,7 +101,7 @@ def vector_store():
     pinecone.create_index(
         name=index_name,
         metric='dotproduct',
-        dimension=1536  # 1536 dim of text-embedding-ada-002
+        dimension=length_of_embedding  # 1536 dim of text-embedding-ada-002
     )
 
     # wait for index to be initialized
@@ -85,15 +109,17 @@ def vector_store():
         time.sleep(1)
 
     index = pinecone.Index(index_name)
-    index.describe_index_stats()
+    print(index.describe_index_stats())
 
     model_name = 'text-embedding-ada-002'
-    embedding = OpenAIEmbeddings(chunk_size=1)
 
     # TODO: Change embedding to MarkdownHeaderTextSplitter if it is better!
-    chunks = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100).split_documents(md)
 
-    vector_store = Pinecone.from_documents(chunks, embedding, index_name=index_name)
+    vector_store = Pinecone(index, embeddings.embed_query, "text")
+    return vector_store
+
+vector_stored = vector_store()
+print(vector_stored)
 
 """
  ____  ____  ____  ____  ____  ____  _  _  __    __   
