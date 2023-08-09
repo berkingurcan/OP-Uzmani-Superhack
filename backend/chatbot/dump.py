@@ -6,6 +6,7 @@ import tiktoken
 import pinecone
 import json
 import time
+import numpy as np
 
 from langchain.document_loaders import UnstructuredMarkdownLoader
 from langchain.embeddings.openai import OpenAIEmbeddings
@@ -129,7 +130,7 @@ def vector_store():
 
         vectors = [{
         "id": ids[i],
-        "values": embeddings[i],
+        "values": np.array(embeddings[i]),
         "metadata": {
             "text": chunks[i].page_content,
             "title": extract_title(chunks[i]),  
@@ -140,7 +141,7 @@ def vector_store():
     vectors = get_metadatas(splitted_documents)
 
     for i in range(len(vectors)):
-       indexed = index.upsert()
+       indexed = index.upsert(vectors[i])
        print(indexed)
 
     return "Successfully upserted"
