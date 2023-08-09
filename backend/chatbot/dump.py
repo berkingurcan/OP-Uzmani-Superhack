@@ -10,7 +10,7 @@ import time
 from langchain.document_loaders import UnstructuredMarkdownLoader
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter, MarkdownTextSplitter
-from langchain.vectorstores import Pinecone
+from langchain.vectorstores import Pinecone, Chroma
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import RetrievalQA
 
@@ -91,10 +91,17 @@ embeddings, length_of_embedding = embed()
 
 def vector_store():
 
+    # get metadatas and return vector
     def get_metadatas(chunks):
+        persist_directory = './db'
 
-        
-        
+        vectordb = Chroma.from_documents(
+            documents=splitted_documents,
+            embedding=embeddings,
+            persist_directory=persist_directory
+        )
+
+        print(vectordb._collection.count())
         # extract titles from documents
         def extract_title(document):
             lines = document.page_content.split('\n')
@@ -114,14 +121,13 @@ def vector_store():
             "title": extract_title(chunks[i]),  
         }} for i in range(len(chunks))]
 
-        return vectors
+        return vectordb
     
-    vectors = get_metadatas(splitted_documents)
+    vectordb = get_metadatas(splitted_documents)
 
-    return "Successfully upserted"
+    return vectordb
 
-indexed = vector_store()
-print(indexed)
+vector_db = vector_store()
 
 """
  ____  ____  ____  ____  ____  ____  _  _  __    __   
@@ -132,32 +138,9 @@ print(indexed)
 def retrieval(query):
     # TODO retrival with query
 
-    openai.api_key = os.getenv('OPENAI_API_KEY') or 'OPENAI_API_KEY'
-    # Load Pinecone API key
-    api_key = os.getenv('PINECONE_API_KEY') or 'YOUR_API_KEY'
-    # Set Pinecone environment. Find next to API key in console
-    env = os.getenv('PINECONE_ENVIRONMENT') or "YOUR_ENV"
+    docs = vector_db.similarity_search(query, k=3)
+    return docs[0].page_content
 
-    embed_model = "text-embedding-ada-002"
-
-    chat = ChatOpenAI(openai_api_key=openai.api_key)
-
-    embed = OpenAIEmbeddings(
-        model=embed_model,
-        openai_api_key=openai.api_key
-    )
-
-    pinecone.init(api_key=api_key, environment=env)
-    index = pinecone.Index('mango')
-    vector_store = Pinecone(index, embed.embed_query, "text")
-
-    qa = RetrievalQA.from_chain_type(
-        llm=chat,
-        chain_type="stuff",
-        retriever=vector_store.as_retriever()
-    )
-
-    return qa.run(query)
 
 result = retrieval("What is OP Stack?")
 print(result)
