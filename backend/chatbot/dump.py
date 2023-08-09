@@ -6,7 +6,9 @@ import tiktoken
 import pinecone
 import json
 import time
+import chromadb
 
+from chromadb.utils import embedding_functions
 from langchain.document_loaders import UnstructuredMarkdownLoader
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter, MarkdownTextSplitter
@@ -76,11 +78,13 @@ def embed():
         openai_api_key=os.environ['OPENAI_API_KEY']
     ).embed_documents(text)
 
-    length_of_embedding = len(embeddings[0])
+    length_of_embeddings = (len(embeddings), len(embeddings[0]))
 
-    return embeddings, length_of_embedding
+    return embeddings, length_of_embeddings
     
-embeddings, length_of_embedding = embed()
+embeddings, length_of_embeddings = embed()
+print("LENGTH: ", length_of_embeddings)
+# LENGTH:  (197, 1536)
 
 """
  _  _  ____  ___  ____  _____  ____    ___  ____  _____  ____  ____ 
@@ -89,46 +93,44 @@ embeddings, length_of_embedding = embed()
   \/  (____)\___) (__) (_____)(_)\_)  (___/ (__) (_____)(_)\_)(____)
 """
 
-def vector_store():
+def vector_store(chunks):
 
-    # get metadatas and return vector
-    def get_metadatas(chunks):
-        persist_directory = './db'
+    persist_directory = './db'
 
-        vectordb = Chroma.from_documents(
-            documents=splitted_documents,
-            embedding=embeddings,
-            persist_directory=persist_directory
-        )
+    chroma_client = chromadb.Client()
+    collection = chroma_client.create_collection(name="my_collection")
 
-        print(vectordb._collection.count())
-        # extract titles from documents
-        def extract_title(document):
-            lines = document.page_content.split('\n')
-            for line in lines:
-                if line.startswith('title:'):
-                    title = line.split('title:')[1].strip()
-                    return title
-            return ""  # Return None if no title is found
+    # extract titles from documents
+    def extract_title(document):
+        lines = document.page_content.split('\n')
+        for line in lines:
+            if line.startswith('title:'):
+                title = line.split('title:')[1].strip()
+                return title
+        return ""  # Return None if no title is found
 
-        ids = [str(uuid4()) for _ in range(len(splitted_documents))]
+    ids = [str(uuid4()) for _ in range(len(splitted_documents))]
 
-        vectors = [{
-        "id": ids[i],
-        "values": embeddings[i],
-        "metadata": {
+    
+    collection.add(
+        embeddings = embeddings,
+        documents = [i.page_content for i in splitted_documents],
+        metadatas = [{
             "text": chunks[i].page_content,
             "title": extract_title(chunks[i]),  
-        }} for i in range(len(chunks))]
+        } for i in range(len(chunks))],
+        ids = ids
+    )
 
-        return vectordb
-    
-    vectordb = get_metadatas(splitted_documents)
+    return collection
 
-    return vectordb
+collection = vector_store(splitted_documents)
+results = collection.query(
+    query_texts=["What is op stack"],
+    n_results=2
+)
 
-vector_db = vector_store()
-
+print(results)
 """
  ____  ____  ____  ____  ____  ____  _  _  __    __   
 (  _ \( ___)(_  _)(  _ \(_  _)( ___)( \/ )/__\  (  )  
