@@ -127,10 +127,6 @@ def vector_store():
 
         ids = [str(uuid4()) for _ in range(len(splitted_documents))]
 
-        for i in range(len(chunks)):
-            print(f"Embeddings type for document {i}: {type(embeddings[i][2])}")
-            print(f"Embeddings values for document {i}: {embeddings[i]}")
-
         vectors = [{
         "id": ids[i],
         "values": embeddings[i],
