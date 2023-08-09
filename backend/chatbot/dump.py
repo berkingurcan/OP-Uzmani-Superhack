@@ -70,12 +70,12 @@ def embed():
     # TODO Embedding
     model_name = 'text-embedding-ada-002'
 
-    text = [c.page_content for c in splitted_documents]
+    texts = [c.page_content for c in splitted_documents]
 
     embeddings = OpenAIEmbeddings(
         model=model_name,
         openai_api_key=os.environ['OPENAI_API_KEY']
-    ).embed_documents(text)
+    ).embed_documents(texts)
 
     length_of_embedding = len(embeddings[0])
 
@@ -125,16 +125,18 @@ def vector_store():
                     title = line.split('title:')[1].strip()
                     return title
             return ""  # Return None if no title is found
-
+        
         ids = [str(uuid4()) for _ in range(len(splitted_documents))]
 
         vectors = [{
-        "id": ids[i],
-        "values": np.array(embeddings[i]),
-        "metadata": {
-            "text": chunks[i].page_content,
-            "title": extract_title(chunks[i]),  
+        'id': ids[i],
+        'values': embeddings[i],
+        'metadata': {
+            'text': chunks[i].page_content,
+            'title': extract_title(chunks[i]),  
         }} for i in range(len(chunks))]
+
+        print(vectors[3])
 
         return vectors
     
