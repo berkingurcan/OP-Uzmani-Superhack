@@ -140,7 +140,7 @@ def vector_store():
     vectors = get_metadatas(splitted_documents)
 
     for i in range(len(vectors)):
-       indexed = index.upsert(vectors[i])
+       indexed = index.upsert()
        print(indexed)
 
     return "Successfully upserted"
