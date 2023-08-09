@@ -56,8 +56,6 @@ def split_documents():
     chunks = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100).split_documents(loaded_md)
     return chunks
    
-
-
 splitted_documents = split_documents()
 
 """
@@ -117,7 +115,8 @@ def vector_store():
     index = pinecone.Index(index_name)
 
     def get_metadatas(chunks):
-
+        
+        # extract titles from documents
         def extract_title(document):
             lines = document.page_content.split('\n')
             for line in lines:
@@ -126,19 +125,29 @@ def vector_store():
                     return title
             return ""  # Return None if no title is found
 
+        ids = [str(uuid4()) for _ in range(len(splitted_documents))]
 
-        metadatas = [ {
-        "text": chunks[i].page_content,
-        "title": extract_title(chunks[i]),
-        } for i in range(len(chunks)) ]
+        for i in range(len(chunks)):
+            print(f"Embeddings type for document {i}: {type(embeddings[i][2])}")
+            print(f"Embeddings values for document {i}: {embeddings[i]}")
 
-        return metadatas
+        vectors = [{
+        "id": ids[i],
+        "values": embeddings[i],
+        "metadata": {
+            "text": chunks[i].page_content,
+            "title": extract_title(chunks[i]),  
+        }} for i in range(len(chunks))]
+
+        return vectors
     
-    metadatas = get_metadatas(splitted_documents)
+    vectors = get_metadatas(splitted_documents)
 
-    ids = [str(uuid4()) for _ in range(len(splitted_documents))]
-    indexed = index.upsert(zip(ids, embeddings, metadatas))
-    return indexed
+    for i in range(len(vectors)):
+       indexed = index.upsert(vectors[i])
+       print(indexed)
+
+    return "Successfully upserted"
 
 indexed = vector_store()
 print(indexed)
