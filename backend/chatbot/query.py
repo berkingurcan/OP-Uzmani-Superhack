@@ -54,7 +54,7 @@ def retrieval(query):
 
     return qa.run(query)
 
-result = retrieval("What is Optimism Portal or OP Stack?")
+result = retrieval("I want to create erc20 token contract on OP Stack how to do that")
 print(result)
 
 def print_index_stats():
