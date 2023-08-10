@@ -1,6 +1,7 @@
 import os
 import openai
 import tiktoken
+import pinecone
 import json
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -11,12 +12,20 @@ from dotenv import load_dotenv, find_dotenv
 _ = load_dotenv(find_dotenv()) # read local .env file
 
 openai.api_key  = os.environ['OPENAI_API_KEY']
+# Load Pinecone API key
+api_key = os.getenv('PINECONE_API_KEY') or 'YOUR_API_KEY'
+# Set Pinecone environment. Find next to API key in console
+env = os.getenv('PINECONE_ENVIRONMENT') or "YOUR_ENV"
+
+pinecone.init(api_key=api_key, environment=env)
+
 
 def get_log(request):
     data = {
         'message': 'working'
     }
     return JsonResponse(data)
+
 
 @csrf_exempt
 def get_completion( request, 
