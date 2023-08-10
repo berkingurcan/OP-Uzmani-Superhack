@@ -1,13 +1,14 @@
 import glob
 import os
-from uuid import uuid4
 import openai
 import tiktoken
 import pinecone
 import json
 import time
+import requests
 import numpy as np
 
+from uuid import uuid4
 from langchain.document_loaders import UnstructuredMarkdownLoader
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter, MarkdownTextSplitter
@@ -72,16 +73,17 @@ def embed():
 
     texts = [c.page_content for c in splitted_documents]
 
-    embeddings = OpenAIEmbeddings(
+    openai.api_key = os.getenv('OPENAI_API_KEY') or 'OPENAI_API_KEY'
+
+    embeddings = openai.Embedding.create(
+        input=texts,
         model=model_name,
-        openai_api_key=os.environ['OPENAI_API_KEY']
-    ).embed_documents(texts)
+    )
 
-    length_of_embedding = len(embeddings[0])
-
-    return embeddings, length_of_embedding
+    embeds = [record['embedding'] for record in embeddings['data']]
+    return embeds
     
-embeddings, length_of_embedding = embed()
+embeddings = embed()
 
 """
  _  _  ____  ___  ____  _____  ____    ___  ____  _____  ____  ____ 
@@ -106,7 +108,7 @@ def vector_store():
     pinecone.create_index(
         name=index_name,
         metric='dotproduct',
-        dimension=length_of_embedding  # 1536 dim of text-embedding-ada-002
+        dimension=1536  # 1536 dim of text-embedding-ada-002
     )
 
     # wait for index to be initialized
@@ -115,8 +117,7 @@ def vector_store():
 
     index = pinecone.Index(index_name)
 
-    def get_metadatas(chunks):
-        
+    def get_vectors(chunks):
         # extract titles from documents
         def extract_title(document):
             lines = document.page_content.split('\n')
@@ -126,27 +127,32 @@ def vector_store():
                     return title
             return ""  # Return None if no title is found
         
-        ids = [str(uuid4()) for _ in range(len(splitted_documents))]
+        ids = [str(uuid4()) for _ in range(len(chunks))]
 
-        vectors = [{
+        vectors = [json.dumps({
         'id': ids[i],
         'values': embeddings[i],
         'metadata': {
             'text': chunks[i].page_content,
             'title': extract_title(chunks[i]),  
-        }} for i in range(len(chunks))]
-
-        print(vectors[3])
+        }}) for i in range(len(chunks))]
 
         return vectors
     
-    vectors = get_metadatas(splitted_documents)
+    def extract_title(document):
+            lines = document.page_content.split('\n')
+            for line in lines:
+                if line.startswith('title:'):
+                    title = line.split('title:')[1].strip()
+                    return title
+            return ""  # Return None if no title is found
+    
+    ids = [str(uuid4()) for _ in range(len(splitted_documents))]
+    
+    a_vector = [(ids[i], embeddings[i], {'text': splitted_documents[i].page_content, 'title': extract_title(splitted_documents[i])}) for i in range(100)]
 
-    for i in range(len(vectors)):
-       indexed = index.upsert(vectors[i])
-       print(indexed)
-
-    return "Successfully upserted"
+    upserted = index.upsert(a_vector)
+    return upserted
 
 indexed = vector_store()
 print(indexed)
@@ -187,12 +193,14 @@ def retrieval(query):
 
     return qa.run(query)
 
-result = retrieval("What is OP Stack?")
+result = retrieval("What is Optimism Portal or OP Stack?")
 print(result)
 
 def print_index_stats():
     index = pinecone.Index('mango')
     print(index.describe_index_stats())
+
+print_index_stats()
 
 
 """
