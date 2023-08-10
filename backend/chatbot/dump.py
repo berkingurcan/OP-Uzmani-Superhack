@@ -148,14 +148,17 @@ def vector_store():
             return ""  # Return None if no title is found
     
     ids = [str(uuid4()) for _ in range(len(splitted_documents))]
-    
+
     a_vector = [(ids[i], embeddings[i], {'text': splitted_documents[i].page_content, 'title': extract_title(splitted_documents[i])}) for i in range(100)]
+    b_vector = [(ids[i], embeddings[i], {'text': splitted_documents[i].page_content, 'title': extract_title(splitted_documents[i])}) for i in range(100, 197)]
 
-    upserted = index.upsert(a_vector)
-    return upserted
+    upserted_a = index.upsert(a_vector)
+    upserted_b = index.upsert(b_vector)
 
-indexed = vector_store()
-print(indexed)
+    return upserted_a, upserted_b
+
+upserted_a, upserted_b = vector_store()
+print(upserted_a, upserted_b)
 
 """
  ____  ____  ____  ____  ____  ____  _  _  __    __   
@@ -163,45 +166,8 @@ print(indexed)
  )   / )__)   )(   )   / _)(_  )__)  \  //(__)\  )(__ 
 (_)\_)(____) (__) (_)\_)(____)(____)  \/(__)(__)(____)
 """
-def retrieval(query):
-    # TODO retrival with query
 
-    openai.api_key = os.getenv('OPENAI_API_KEY') or 'OPENAI_API_KEY'
-    # Load Pinecone API key
-    api_key = os.getenv('PINECONE_API_KEY') or 'YOUR_API_KEY'
-    # Set Pinecone environment. Find next to API key in console
-    env = os.getenv('PINECONE_ENVIRONMENT') or "YOUR_ENV"
-
-    embed_model = "text-embedding-ada-002"
-
-    chat = ChatOpenAI(openai_api_key=openai.api_key)
-
-    embed = OpenAIEmbeddings(
-        model=embed_model,
-        openai_api_key=openai.api_key
-    )
-
-    pinecone.init(api_key=api_key, environment=env)
-    index = pinecone.Index('mango')
-    vector_store = Pinecone(index, embed.embed_query, "text")
-
-    qa = RetrievalQA.from_chain_type(
-        llm=chat,
-        chain_type="stuff",
-        retriever=vector_store.as_retriever()
-    )
-
-    return qa.run(query)
-
-result = retrieval("What is Optimism Portal or OP Stack?")
-print(result)
-
-def print_index_stats():
-    index = pinecone.Index('mango')
-    print(index.describe_index_stats())
-
-print_index_stats()
-
+## IT IS IN  QUERY.PY
 
 """
  _____  __  __  ____  ____  __  __  ____ 
@@ -210,4 +176,4 @@ print_index_stats()
 (_____)(______) (__) (__)  (______) (__) 
 """
 
-# TODO Chat with your data :D
+## IN QUERY.PY
