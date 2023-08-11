@@ -34,10 +34,6 @@ def md_loader():
 
 loaded_md = md_loader()
 
-def git_loader():
-    # TODO: Load github projects
-    pass
-
 """
  ___  ____  __    ____  ____  ____  ____  _  _  ___ 
 / __)(  _ \(  )  (_  _)(_  _)(_  _)(_  _)( \( )/ __)
