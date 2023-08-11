@@ -1,5 +1,7 @@
 import clsx from 'clsx'
 import Balancer from 'react-wrap-balancer'
+import ReactMarkdown from 'react-markdown'
+import { CopyBlock, CodeBlock } from "react-code-blocks";
 
 // wrap Balancer to remove type errors :( - @TODO - fix this ugly hack
 const BalancerWrapper = (props: any) => <Balancer {...props} />
@@ -34,13 +36,63 @@ export const LoadingChatLine = () => (
 )
 
 // util helper to convert new lines to <br /> tags
-const convertNewLines = (text: string) =>
-  text.split('\n').map((line, i) => (
-    <span key={i}>
-      {line}
-      <br />
-    </span>
-  ))
+const convertNewLines = (text: string) => {
+  const lines = text.split('\n');
+  const result = [];
+  let codeBlock = false;
+  let codeLines = [];
+
+  for (let line of lines) {
+    if (line.trim().startsWith('```')) {
+      if (codeBlock) {
+        // Close the code block
+        result.push(
+          <div key={result.length} className="codebox">
+            <CodeBlock
+              text={codeLines.join('\n')}
+              language={'ts'}
+              showLineNumbers={false}
+              wrapLines
+            />
+          </div>
+        );
+        codeLines = [];
+        codeBlock = false;
+      } else {
+        // Start a new code block
+        codeBlock = true;
+      }
+    } else if (codeBlock) {
+      // Inside a code block, just collect the lines
+      codeLines.push(line);
+    } else {
+      // Regular text lines
+      result.push(
+        <span key={result.length}>
+          {line}
+          <br />
+        </span>
+      );
+    }
+  }
+
+  // Check if there's an unclosed code block
+  if (codeBlock && codeLines.length > 0) {
+    result.push(
+      <div key={result.length} className="codebox">
+        <CodeBlock
+              text={codeLines.join('\n')}
+              language={'ts'}
+              showLineNumbers={false}
+              wrapLines
+            />
+      </div>
+    );
+  }
+
+  return result;
+};
+
 
 export function ChatLine({ role = 'assistant', content }: ChatGPTMessage) {
   if (!content) {
@@ -69,7 +121,7 @@ export function ChatLine({ role = 'assistant', content }: ChatGPTMessage) {
                   role == 'assistant' ? 'font-semibold font- ' : 'text-gray-400'
                 )}
               >
-                {formatteMessage}
+              {formatteMessage}
               </p>
             </div>
           </div>
