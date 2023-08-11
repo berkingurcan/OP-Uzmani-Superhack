@@ -113,7 +113,6 @@ export function Chat() {
         // TODO: - create codebox for code snippets
       }
 
-
       lastMessage = lastMessage + chunkValue
 
       setMessages([
