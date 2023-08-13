@@ -4,6 +4,9 @@ The **OP Uzmani AI Chatbot** is a specialized tool tailored to support developer
 
 Unlike conventional chatbots, this unique AI-powered chatbot is equipped with the most up-to-date information pertaining to OP Stack and offers an unparalleled depth of understanding in the realm of OP-Stack.
 
+## Note:
+This project is not deployed because of time limit. You can watch the [demo video](https://ethglobal.com/showcase/op-uzmani-0vjzr) or just can run the project from [here](https://github.com/berkingurcan/OP-Uzmani-Superhack#how-to-run-project).
+
 ## Project Overview
 
 The **OP-Stack Uzmani** project endeavors to empower developers within the OP Stack ecosystem by introducing an advanced chatbot driven by artificial intelligence. This pioneering chatbot is designed to deliver information about OP Stack, instant code insights and debugging assistance, facilitating smoother and more efficient development experiences for OP Stack developers. By harnessing the capabilities of AI technology, the chatbot aims to enhance productivity and equip developers with the tools to effectively overcome challenges.
