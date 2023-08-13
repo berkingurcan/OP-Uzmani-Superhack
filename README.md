@@ -1,12 +1,12 @@
 # OP Uzmani AI Chatbot
 
-The **OP Uzmani AI Chatbot** is a specialized tool tailored to support developers working within the OP-Stack environment. Powered by the cutting-edge GPT language model developed by OpenAI, it has undergone extensive training encompassing a wide spectrum of programming knowledge and expertise related to OP-Stack.
+The **OP Uzmani AI Chatbot** is a specialized tool tailored to support developers working within the OP-Stack environment. Powered by the cutting-edge GPT language model developed by OpenAI, it has undergone extensive training encompassing a wide spectrum of knowledge and expertise related to OP-Stack.
 
 Unlike conventional chatbots, this unique AI-powered chatbot is equipped with the most up-to-date information pertaining to OP Stack and offers an unparalleled depth of understanding in the realm of OP-Stack.
 
 ## Project Overview
 
-The **OP-Stack Uzmani** project endeavors to empower developers within the OP Stack ecosystem by introducing an advanced chatbot driven by artificial intelligence. This pioneering chatbot is designed to deliver instant code insights and debugging assistance, facilitating smoother and more efficient development experiences for OP Stack developers. By harnessing the capabilities of AI technology, the chatbot aims to enhance productivity and equip developers with the tools to effectively overcome challenges.
+The **OP-Stack Uzmani** project endeavors to empower developers within the OP Stack ecosystem by introducing an advanced chatbot driven by artificial intelligence. This pioneering chatbot is designed to deliver information about OP Stack, instant code insights and debugging assistance, facilitating smoother and more efficient development experiences for OP Stack developers. By harnessing the capabilities of AI technology, the chatbot aims to enhance productivity and equip developers with the tools to effectively overcome challenges.
 
 ## Key Features
 
@@ -16,8 +16,11 @@ The OP-Stack AI Chatbot boasts a range of essential features:
 
 ## Future Improvements
 
-
-
+- **Embed github repositories and example codes**
+- **Create second index layer for secondary sources**
+- **Also upload Optimisim documentation**
+- **Create memory buffer for chatbot**
+- **UI Improvements**
 
 ## Inclusive Collaboration
 
